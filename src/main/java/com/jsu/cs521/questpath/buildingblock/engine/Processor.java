@@ -1,0 +1,303 @@
+package com.jsu.cs521.questpath.buildingblock.engine;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.json.JSONArray;
+
+import blackboard.data.content.Content;
+import blackboard.data.content.avlrule.AvailabilityRule;
+import blackboard.data.course.CourseMembership;
+import blackboard.data.gradebook.Lineitem;
+import blackboard.data.navigation.CourseToc;
+import blackboard.persist.Id;
+import blackboard.persist.PersistenceException;
+import blackboard.persist.content.ContentDbLoader;
+import blackboard.persist.content.avlrule.AvailabilityCriteriaDbLoader;
+import blackboard.persist.content.avlrule.AvailabilityRuleDbLoader;
+import blackboard.persist.course.CourseMembershipDbLoader;
+import blackboard.persist.gradebook.LineitemDbLoader;
+import blackboard.persist.gradebook.impl.OutcomeDefinitionDbLoader;
+import blackboard.persist.navigation.CourseTocDbLoader;
+import blackboard.platform.context.Context;
+
+import com.jsu.cs521.questpath.buildingblock.object.GraphTier;
+import com.jsu.cs521.questpath.buildingblock.object.QuestPath;
+import com.jsu.cs521.questpath.buildingblock.object.QuestPathItem;
+import com.jsu.cs521.questpath.buildingblock.object.QuestRule;
+import com.jsu.cs521.questpath.buildingblock.object.QuestStats;
+import com.jsu.cs521.questpath.buildingblock.util.QuestPathUtil;
+/**
+ * 
+ * @author JBLeftwich
+ *
+ */
+public class Processor {
+	
+	private int i = 1;
+	public boolean isUserAnInstructor = false;
+	public String qLayout = "";
+	public String questTier = "";
+	public List<QuestPath> qPaths = new ArrayList<QuestPath>();
+	public QuestPathUtil qpUtil = new QuestPathUtil();
+	List<List<GraphTier>> allTiers = new ArrayList<List<GraphTier>>();
+	public String debugString = "";
+	public List<CourseMembership> courseMembers = new ArrayList<CourseMembership>();
+	public List<QuestStats> courseStats = new ArrayList<QuestStats>();
+	public List<QuestPathItem> nonQuestItems = new ArrayList<QuestPathItem>();
+/**
+ * This method builds a QuestPath for each initial Quest Path Item
+ * It then loops through the remaining Quest Path Items to apply them
+ * to the appropriate Quest Path.
+ * @param items - A list of Quest Path Items
+ * @return
+ */
+	public List<QuestPath> buildQuests(List<QuestPathItem> items) {
+		List<QuestPathItem> tempListA = new ArrayList<QuestPathItem>();
+		tempListA.addAll(items);
+		List<QuestPathItem> tempListB = new ArrayList<QuestPathItem>();
+		tempListB.addAll(items);
+		List<QuestPath> paths = new ArrayList<QuestPath>();
+		for (QuestPathItem item : items) {
+			if (item.isFirstQuestItem()) {
+				QuestPath newPath = new QuestPath();
+				newPath.getQuestPathItems().add(item);
+				newPath.getQuestItemNames().add(item.getExtContentId());
+				newPath.setQuestName("Quest Path - " + i);
+				tempListB.remove(item);
+				i++;
+				paths.add(newPath);
+			}
+		}
+		tempListA.clear(); 
+		tempListA.addAll(tempListB);
+		boolean process = true;
+		int prevSize = tempListA.size();
+		while (tempListA.size() > 0 && process) {
+			for (QuestPathItem item : tempListA) {
+				for (QuestPath qp : paths) {
+					for (String parentItem : item.getParentContent()) {
+						if (qp.getQuestItemNames().contains(parentItem)) {
+							qp.getQuestItemNames().add(item.getExtContentId());
+							qp.getQuestPathItems().add(item);
+							tempListB.remove(item);
+							break;
+						}
+					}
+				}
+			}
+			if (tempListB.size() == prevSize) {
+				process = false;
+			}
+			tempListA.clear(); 
+			tempListA.addAll(tempListB);
+			prevSize = tempListA.size();
+		}
+		return paths;
+	}
+	
+/**
+ * Build tier structure for quest items
+ * @param items
+ * @return
+ */
+	public List<GraphTier>  buildGraphTier (List<QuestPathItem> items) {
+		List<GraphTier> graphTier = new ArrayList<GraphTier>();
+		int tier = 0;
+		boolean settingTier = true;
+		List<String> tierFound = new ArrayList<String>();
+		GraphTier tier1 = new GraphTier();
+		for (QuestPathItem item : items) {
+			if (item.isFirstQuestItem()) {
+				tier1.getTier().add(item.getExtContentId());
+				tierFound.add(item.getExtContentId());
+			}
+		}
+		graphTier.add(tier1);
+		while (settingTier) {
+			tier++;
+			GraphTier nextTier = new GraphTier();
+			for (QuestPathItem item : items) {
+				for (String parent : item.getParentContent()) {
+					if (graphTier.get(tier - 1).getTier().contains(parent) && !graphTier.get(tier - 1).getTier().contains(item.getExtContentId())) {
+						nextTier.getTier().add(item.getExtContentId());
+						tierFound.add(item.getExtContentId());
+						break;
+					}
+				}
+			}
+			if (nextTier.getTier().size() == 0) {
+				settingTier = false;
+			}
+			else {
+			graphTier.add(nextTier);
+			}
+		}
+		GraphTier lastTier = new GraphTier();
+		for (QuestPathItem item : items) {
+			if (!tierFound.contains(item.getExtContentId())) {
+				lastTier.getTier().add(item.getExtContentId());
+			}
+		}
+		if (lastTier.getTier().size() > 0) {
+			graphTier.add(lastTier);
+		}
+		return graphTier;
+	}
+	
+/**
+ * Method does initial work to gather information and reports back to JSP
+ * @param ctx
+ * @throws PersistenceException
+ */
+	public void QPDriver (Context ctx) throws PersistenceException {
+		try {
+			Id courseID = ctx.getCourseId();
+			String sessionUserRole = ctx.getCourseMembership().getRoleAsString();
+			Id ctxId = ctx.getCourseMembership().getId();
+			
+		
+			courseMembers = 
+					CourseMembershipDbLoader.Default.getInstance().loadByCourseIdAndRole(courseID, CourseMembership.Role.STUDENT, null, true);
+			
+			if (sessionUserRole.trim().toLowerCase().equals("instructor")) {
+				isUserAnInstructor = true;
+			}
+			CourseTocDbLoader cTocLoader = CourseTocDbLoader.Default.getInstance();
+			ContentDbLoader cntDbLoader = ContentDbLoader.Default.getInstance();
+
+			List<CourseToc> tList = cTocLoader.loadByCourseId(ctx.getCourseId());
+
+			//Create an ArrayList of Content based on the TOC
+			List<Content> children = new ArrayList<Content>();
+			for (CourseToc t : tList) {
+				if (t.getTargetType() == CourseToc.Target.CONTENT) {
+					children.addAll(cntDbLoader.loadChildren(t.getContentId(), false, null));
+				}
+			}
+			for (Content c : children) {
+				if (c.getTitle().equalsIgnoreCase("QuestPath")) {
+					qLayout = c.getBody().getText().replace("<p>", "").replace("</p>", "");
+				}
+			}
+			if (qLayout.isEmpty()) {
+				qLayout = "null";
+			}
+			
+//			List<CourseMembership> processList = new ArrayList<CourseMembership>();
+//			if (isUserAnInstructor) {
+//				processList.addAll(courseMembers);
+//			}
+//			else {
+//				processList.add(ctx.getCourseMembership());
+//			}
+			
+			//Load grades for gradable Lineitems
+			LineitemDbLoader lineItemDbLoader = LineitemDbLoader.Default.getInstance();
+			List<Lineitem> lineitems = lineItemDbLoader.loadByCourseId(ctx.getCourseId());
+
+			List<QuestPathItem> itemList = qpUtil.buildInitialList(ctxId, children, lineitems,true);
+
+			//Create Loaders for Availability Rules, Criteria and Outcome
+			//These loaders will allow us to capture Adaptive Release Information
+			AvailabilityRuleDbLoader avRuleLoader = AvailabilityRuleDbLoader.Default.getInstance();
+			AvailabilityCriteriaDbLoader avCriLoader = AvailabilityCriteriaDbLoader.Default.getInstance();
+			OutcomeDefinitionDbLoader defLoad = OutcomeDefinitionDbLoader.Default.getInstance();
+			//Load ADAPTIVE RELEASE rules
+			List<AvailabilityRule> rules = avRuleLoader.loadByCourseId(courseID);
+			List<QuestRule> questRules = qpUtil.buildQuestRules(rules, avCriLoader, defLoad);
+			itemList = qpUtil.setParentChildList(itemList, questRules);
+			itemList = qpUtil.setInitialFinal(itemList);
+			nonQuestItems = qpUtil.findNonAdaptiveReleaseContent(itemList);
+			itemList = qpUtil.removeNonAdaptiveReleaseContent(itemList);
+			itemList = qpUtil.setGradableQuestPathItemStatus(itemList,questRules);
+			itemList = qpUtil.setLockOrUnlocked(itemList, questRules);
+			qPaths = this.buildQuests(itemList);
+
+			for (QuestPath quest : qPaths) {
+				quest = qpUtil.setQuest(quest);
+				List<GraphTier> tiers = buildGraphTier(quest.getQuestPathItems());
+				allTiers.add(tiers);
+			}
+			if (allTiers.size() > 0) {
+				questTier = new JSONArray(allTiers).toString();
+			}
+			else {
+				questTier = "null";
+			}
+
+			//If Instructor
+			if (isUserAnInstructor) {
+				courseStats = buildInitQS(qPaths);
+				List<QuestPathItem> tempList = new ArrayList<QuestPathItem>();
+				//Loop thru all student id's to build their Quest Path 
+				for (CourseMembership cm : courseMembers) {
+					tempList = qpUtil.buildInitialList(cm.getId(), children, lineitems, false);
+					tempList = qpUtil.setParentChildList(tempList, questRules);
+					tempList = qpUtil.setInitialFinal(tempList);
+					tempList = qpUtil.removeNonAdaptiveReleaseContent(tempList);
+					tempList = qpUtil.setGradableQuestPathItemStatus(tempList,questRules);
+					tempList = qpUtil.setLockOrUnlocked(tempList, questRules);
+					List<QuestPath> tempPaths = this.buildQuests(tempList);
+					List<String> procExtId = new ArrayList<String>();
+					String studentName = cm.getUser().getFamilyName() + ", " + cm.getUser().getGivenName();
+					for (QuestStats courseStat : courseStats) {
+						for (QuestPath qp : tempPaths) {
+							for (QuestPathItem qi : qp.getQuestPathItems()) {
+								if(!procExtId.contains(qi.getExtContentId())) {
+									if (qi.getExtContentId().equals(courseStat.getExternalContentId())) {
+										if (qi.isUnLocked() && qi.isPassed()) {
+											courseStat.incrementPassedCount();
+											courseStat.getPassedStudents().add(studentName);
+										}
+										else if (qi.isUnLocked() && !qi.isGradable()) {
+											courseStat.incrementPassedCount();
+											courseStat.getPassedStudents().add(studentName);
+										}
+										else if (qi.isAttempted() && qi.isUnLocked()) {
+											courseStat.incrementAttemptedCount();
+											courseStat.getAttemptedStudents().add(studentName);
+										}
+										else if (qi.isUnLocked()) {
+											courseStat.incrementAttemptedCount();
+											courseStat.getAttemptedStudents().add(studentName);
+										}
+										else {
+											courseStat.incrementLockedCount();
+											courseStat.getLockedStudents().add(studentName);
+										}
+										procExtId.add(qi.getExtContentId());
+										break;
+									}
+								}
+							}
+						}
+						
+					}
+				}				
+			}
+
+		} catch (PersistenceException e) {
+			e.printStackTrace();
+			throw e;
+		}
+		
+	}
+	
+	public List<QuestStats> buildInitQS(List<QuestPath> quests) {
+		List<QuestStats> initStats = new ArrayList<QuestStats>();
+		List<String> procID = new ArrayList<String>();
+		for (QuestPath quest : quests){
+			for(QuestPathItem qpI: quest.getQuestPathItems()) {
+				if(!procID.contains(qpI.getExtContentId())) {
+					QuestStats initStat = new QuestStats();
+					initStat.setExternalContentId(qpI.getExtContentId());
+					initStats.add(initStat);
+					procID.add(qpI.getExtContentId());
+				}
+			}
+		}
+		return initStats;
+	}
+	
+}
