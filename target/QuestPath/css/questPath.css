@@ -1,3 +1,4 @@
+/*QuestPath CSS */
 .mainDiv {
 	background-color: #E0E0E0;
 	position: relative;
@@ -5,8 +6,14 @@
 	padding: 1.0m;
 }
 
+.chartDiv {
+/* 	z-index:9999; */
+/* 	background-color: blue; */
+/* 	position: absolute; */
+}
+
 .questItem { 
-	border:0.1em dotted #d4e06b; 
+	border:0.2em solid black; 
 	opacity:0.8; 
 	filter:alpha(opacity=80); 
   	width:10%; 
@@ -21,9 +28,19 @@
 	border-radius: 2.0em;
 	overflow: hidden;
 	text-overflow: ellipsis;
-	word-wrap:break-word;
-/* 	background-color:white; */
+/* 	word-wrap:break-word; */
 }
+
+.nonQuestItem {
+	float: none;
+}
+
+.nonQuestItemContainer { 
+	height: 300px;
+	background-color: #E0E0E0;
+	border: 1px dotted black;
+}
+
 
 .questName {
 	background-color:black;
@@ -32,22 +49,15 @@
 .passed {
 	background-color:#B6D7A8;
 }
+
 .failed {
 	background-color:#FFE599;
 	font-weight: bolder;
-	-o-box-shadow: 19px 18px 20px rgba(0, 14, 0, 1);
-	-webkit-box-shadow: 19px 18px 20px rgba(0, 14, 0, 1); 
-	-moz-box-shadow: 19px 18px 20px rgba(0, 14, 0, 1);
-	box-shadow: 19px 18px 20px rgba(0, 14, 0, 1);
 }
+
 .unlocked {
 	background-color:#FFE599;
 	font-weight: bolder;
-	-o-box-shadow: 19px 18px 20px rgba(0, 14, 0, 1);
-	-webkit-box-shadow: 19px 18px 20px rgba(0, 14, 0, 1);
-	-moz-box-shadow: 19px 18px 20px rgba(0, 14, 0, 1);
-	box-shadow: 19px 18px 20px rgba(0, 14, 0, 1);
-	behavior: url(htc/PIE.htc);
 }
 .locked {
 	background-color:#999999;
@@ -70,7 +80,7 @@
 }
 
 .legendColor { 
-	border:0.1em dotted #d4e06b; 
+	border:0.1em dotted #black; 
 	opacity:0.8; 
 	filter:alpha(opacity=80); 
 /*  	width:1em; height:1em;   */
@@ -88,3 +98,28 @@
 }
 
 
+/* .p100 {color: black; font-weight: bolder; background: rgb(51, 102, 255); background: rgba(51, 102, 255, 1);} */
+/* .p90  {color: black; font-weight: bolder; background: rgb(51, 102, 255); background: rgba(51, 102, 255, .9);} */
+/* .p80  {color: black; font-weight: bolder; background: rgb(51, 102, 255); background: rgba(51, 102, 255, .9);} */
+/* .p70  {color: black; font-weight: bolder; background: rgb(51, 102, 255); background: rgba(51, 102, 255, .8);} */
+/* .p60  {color: black; font-weight: bolder; background: rgb(51, 102, 255); background: rgba(51, 102, 255, .7);} */
+/* .p50  {color: black; font-weight: bolder; background: rgb(51, 102, 255); background: rgba(51, 102, 255, .6);} */
+/* .p40  {color: black; font-weight: bolder; background: rgb(51, 102, 255); background: rgba(51, 102, 255, .5);} */
+/* .p30  {color: black; font-weight: bolder; background: rgb(51, 102, 255); background: rgba(51, 102, 255, .4);} */
+/* .p20  {color: black; font-weight: bolder; background: rgb(51, 102, 255); background: rgba(51, 102, 255, .3);} */
+/* .p10  {color: black; font-weight: bolder; background: rgb(51, 102, 255); background: rgba(51, 102, 255, .2);} */
+/* .p0   {color: black; font-weight: bolder; background: rgb(51, 102, 255); background: rgba(51, 102, 255, .2);} */
+
+.p100 {color: black; font-weight: bolder; background: rgb(0, 153, 0); background: rgba(0, 153, 0, 1);}
+.p90  {color: black; font-weight: bolder; background: rgb(0, 204, 0); background: rgba(0, 153, 0, .9);}
+.p80  {color: black; font-weight: bolder; background: rgb(0, 230, 0); background: rgba(0, 153, 0, .8);}
+.p70  {color: black; font-weight: bolder; background: rgb(0, 255, 0); background: rgba(0, 153, 0, .7);}
+.p60  {color: black; font-weight: bolder; background: rgb(0, 255, 0); background: rgba(0, 153, 0, .6);}
+.p50  {color: black; font-weight: bolder; background: rgb(0, 255, 0); background: rgba(0, 153, 0, .5);}
+.p40  {color: black; font-weight: bolder; background: rgb(26, 255, 26); background: rgba(0, 153, 0, .4);}
+.p30  {color: black; font-weight: bolder; background: rgb(51, 255, 51); background: rgba(0, 153, 0, .3);}
+.p20  {color: black; font-weight: bolder; background: rgb(77, 255, 77); background: rgba(0, 153, 0, .2);}
+.p10  {color: black; font-weight: bolder; background: rgb(102, 255, 102); background: rgba(0, 153, 0, .1);}
+.p0   {color: black; font-weight: bolder; background: rgb(128, 255, 128); background: rgba(0, 153, 0, .1);}
+
+   

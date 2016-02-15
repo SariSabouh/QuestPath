@@ -40,7 +40,7 @@ public class QPAttributes {
 			else if (item.isGradable() && item.isLocked()){
 				this.statusClassName = "locked";
 				this.title = item.getName() + " Score - " + item.getPointsEarned() + "/" + item.getPointsPossible() + 
-						" ( " + item.getPercentFormatted()  + "%) " + item.getCompleteRule();
+						" ( " + item.getPercentFormatted()  + "%) " + item.getUnlockRule() + item.getCompleteRule();
 
 			}
 			else {

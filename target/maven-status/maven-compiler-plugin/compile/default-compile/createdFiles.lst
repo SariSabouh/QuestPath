@@ -1,4 +1,5 @@
 org\json\JSONStringer.class
+com\jsu\cs596\questpath\build\rules\RuleBuilder.class
 org\json\JSONTokener.class
 org\json\XML.class
 org\json\XMLTokener.class
@@ -8,9 +9,10 @@ com\jsu\cs591\web\util\QPAttributes.class
 org\json\JSONArray.class
 com\jsu\cs521\questpath\buildingblock\object\GraphTier.class
 org\json\JSONString.class
+org\json\JSONWriter.class
+com\jsu\cs521\questpath\buildingblock\object\QuestStats.class
 com\jsu\cs521\questpath\buildingblock\object\RuleCriteria.class
 org\json\HTTPTokener.class
-org\json\JSONWriter.class
 org\json\CookieList.class
 org\json\CDL.class
 org\json\Cookie.class
@@ -20,7 +22,9 @@ org\json\JSONObject.class
 com\jsu\cs521\questpath\buildingblock\engine\Processor.class
 com\jsu\cs521\questpath\buildingblock\util\QuestPathUtil.class
 com\jsu\cs521\questpath\buildingblock\object\QuestRule.class
+com\jsu\cs521\questpath\buildingblock\object\NewRules.class
 com\jsu\cs521\questpath\buildingblock\object\QuestPathItem.class
+com\jsu\cs521\questpath\buildingblock\object\NewRule.class
 com\jsu\cs521\questpath\buildingblock\object\QuestPathTestObject.class
 org\json\HTTP.class
 org\json\JSONObject$Null.class

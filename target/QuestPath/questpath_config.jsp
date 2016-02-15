@@ -31,16 +31,12 @@
 		proc.QPDriver(ctx);
 		if (proc.isUserAnInstructor) {
 		String cssPath1 = PlugInUtil.getUri("dt", "questpathblock",	"css/questPath.css");
-		String htcPath1 = PlugInUtil.getUri("dt", "questpathblock",	"htc/PIE.htc");
+		StringBuilder ruleOptions = new StringBuilder("");
+		StringBuilder rewardRuleOptions = new StringBuilder("");
+		//String htcPath1 = PlugInUtil.getUri("dt", "questpathblock",	"htc/PIE.htc");
 %>
 <bbNG:cssFile href="<%=cssPath1%>" />
-<bbNG:cssBlock>
-<style>
-.questItem {
-	behavior: url(<%=htcPath1 %>);
-	}
-</style>
-</bbNG:cssBlock>
+<bbNG:cssFile href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css"/>
 <bbNG:pageHeader>
 <bbNG:pageTitleBar title="Questpath Configuration"></bbNG:pageTitleBar>
 </bbNG:pageHeader>
@@ -53,49 +49,79 @@
 			for (QuestPathItem qpI : qp.getQuestPathItems()) {
 				if (!procQI.contains(qpI.getExtContentId())) {
 				QPAttributes qpAtt = new QPAttributes(qpI);
+				if (qpI.isGradable()) {ruleOptions.append("<option value='" + qpI.getExtContentId() + "'>" + qpI.getName() + "</option>");}
+				if (!qpI.isGradable()) {rewardRuleOptions.append("<option value='" + qpI.getExtContentId() + "'>" + qpI.getName() + "</option>");}
 	%>
 			<div id="<%=qpI.getExtContentId() %>"
-				class="questItem <%=qpAtt.getStatusClassName()%>"
+				class="questItem locked"
 				title="<%=qpAtt.getTitle()%>" <%if (!qpI.isLocked()) {%>
 			<%}%>><%=qpI.getName()%></div>
-	<%
-				procQI.add(qpI.getExtContentId());
-				}
+		<%procQI.add(qpI.getExtContentId());}
 			}
 			j++;
 		}
+		for (QuestPathItem qpI : proc.nonQuestItems) {
+				if (!procQI.contains(qpI.getExtContentId())) {
+					if (qpI.isGradable()) {ruleOptions.append("<option value='" + qpI.getExtContentId() + "'>" + qpI.getName() + "</option>");}
+					if (!qpI.isGradable()) {rewardRuleOptions.append("<option value='" + qpI.getExtContentId() + "'>" + qpI.getName() + "</option>");}
 	%>
+			<div id="<%=qpI.getExtContentId() %>"
+				class="questItem nonQuestItem locked" title=""><%}%><%=qpI.getName()%>
+			</div>
+	<%procQI.add(qpI.getExtContentId());}%>
+	
 <bbNG:jsBlock>
 <script type="text/javascript">
-	<%
-	String questString = proc.qpUtil.toJson(proc.qPaths);%>
+	<%String questString = proc.qpUtil.qpathsToJson(proc.qPaths);%>
 	var quests = <%=questString%>;
 	var questLayout = <%=proc.qLayout%>;
 	var questTier = <%=proc.questTier%>;
 	var questsLoaded = true;
 	var questDraggable = true;
+	var instructorView = false;//prevent quest stats when configuring block
 </script>
 <script type="text/javascript">
 <jsp:include page="js/jquery.min.js" />
-<jsp:include page="ScriptFile.jsp" />
-<jsp:include page="js/jquery.jsPlumb-1.3.16-all-min.js" />
-<jsp:include page="js/jquery.ui.touch-punch.min.js" />
-<jsp:include page="js/json2.js" />
-<jsp:include page="js/questPath.js" />
+<%
+String jqUIPath = PlugInUtil.getUri("dt", "questpathblock",	"js/jquery-ui.min.2.js");
+String jtPath   = PlugInUtil.getUri("dt", "questpathblock",	"js/jquery.ui.touch-punch.min.js");
+String jsPath   = PlugInUtil.getUri("dt", "questpathblock",	"js/json2.js");
+String jpPath   = PlugInUtil.getUri("dt", "questpathblock",	"js/jquery.jsPlumb-1.3.16-all-min.js");
+String hcPath   = PlugInUtil.getUri("dt", "questpathblock",	"js/highcharts.js");
+String qpPath   = PlugInUtil.getUri("dt", "questpathblock",	"js/questPath.js");
+String qiPath   = PlugInUtil.getUri("dt", "questpathblock",	"js/qpInstructorView.js");
+%>
+jQuery.getScript('<%=jqUIPath%>', 
+	function() {
+		jQuery.getScript('<%=jtPath%>', function() { 
+			jQuery.getScript('<%=jsPath%>' , function() { 
+				jQuery.getScript('<%=jpPath%>', function() { 
+					jQuery.getScript('<%=hcPath%>',function() { 
+						jQuery.getScript('<%=qpPath%>', function(){ 
+							jQuery.getScript('<%=qiPath%>', function(){
+								waitForDependencies();buildDialog(); 
+	});});});});});});});
 </script>
 </bbNG:jsBlock>
-<div class="legend">
-	<h5>LEGEND</h5>
-	<div class="legendColor passed">Passed</div>
-	<div class="legendColor unlockedLegend">Unlocked</div>
-	<div class="legendColor locked">Locked</div>
-</div>
 <div class="saveButton">
+<!-- <button id='testButton' type="button" onclick='testGetConnectors();'>Test</button> -->
 </div>
 </div>
+<button type="button" id='ruleButton'>Create a new Adaptive Release</button>
+<div id='ruleDialog' title='Add a New Adaptive Release'>
+From <select id='fromItem'><%=ruleOptions.toString()%></select><br />
+To <select id='toItem'><%=ruleOptions.toString()%><%=rewardRuleOptions.toString() %></select>
+<div id="ruleRadio">
+    <input type="radio" id="radio1" name="ruleRadio" value='1' checked="checked" /><label for="radio1">Score Based</label>
+    <input type="radio" id="radio2" name="ruleRadio" value= '2' /><label for="radio2">Percent Based</label>
+</div>
+Minimum Score or Percent: <input type='text' id='minValue' size='5'/>
+<input type='hidden' id="ruleNumber" value='0' />
+</div> 
 	<bbNG:dataCollection>
 		<bbNG:step title="QuestPath Configuration 1.1" >
 			<input type="hidden" id="questLayout" name="questLayout" value='<%=proc.qLayout%>' />
+			<input type="hidden" id="newRules" name="newRules" value='' />
 			<input type="hidden" name="course_id" value="<%=request.getParameter("course_id")%>" />
 		</bbNG:step>
 		<bbNG:stepSubmit>
