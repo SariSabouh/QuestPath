@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<!DOCTYPE xml>
 <manifest>
 	<!-- core extension information -->
 	<plugin>
-		<name value="Gamegogy Quest Path Block 1.2" />
-		<handle value="questpathblock12" />
+		<name value="Gamegogy Quest Path Block" />
+		<handle value="questpathblock" />
 		<description value=" Here is a description." />
-		<version value="1.2" />
+		<version value="1.0.1" />
 		<requires>
 			<bbversion value="9.0.0" />
 		</requires>
@@ -14,22 +13,22 @@
 			<id value="dt" />
 			<name value="David Thornton" />
 			<url value="http://www.jsu.edu/mcis/people/thornton.html" />
-			<description value="Quest Path Project" />
+			<description value="This is part of a research project." />
 		</vendor>
 		<http-actions />
 
 		<!-- Modules, types, and channels for the community -->
 		<module-defs>
-			<module-type ext-ref="questpathblock12" title="Gamegogy Quest Path Block 1.2"
+			<module-type ext-ref="questpathblock" title="Gamegogy Quest Path Block"
 				uicreatable="true">
 				<jsp>
 					<view>questpath.jsp</view>
 					<edit>questpath_config.jsp</edit>
 				</jsp>
 			</module-type>
-			<module type="questpathblock12" isadmin="true"
+			<module type="questpathblock" isadmin="true"
 				isavailabletocourse="true" useraddable="true" isdeletable="true"
-				isdetachable="true" title="Gamegogy Quest Path Block 1.2">
+				isdetachable="true" title="Gamegogy Quest Path Block">
 				<description>Provides a graphical approach to displaying content and
 					related content based on adaptive release rules.</description>
 				<ExtraInfo />

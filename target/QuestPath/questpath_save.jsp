@@ -18,10 +18,6 @@
     
     Author: Jonathan Leftwich  Graduate Student at Jacksonville State University
 -->
-<%@page import="blackboard.platform.persistence.PersistenceServiceFactory"%>
-<%@page import="org.json.JSONArray"%>
-<%@page import="blackboard.data.content.avlrule.AvailabilityRule"%>
-<%@page import="com.jsu.cs596.questpath.build.rules.RuleBuilder"%>
 <%@page import="blackboard.persist.PersistenceException"%>
 <%@page import="blackboard.data.ValidationException"%>
 <%@page import="blackboard.data.content.CourseDocument"%>
@@ -37,20 +33,14 @@
 <%@page import="java.util.List"%>
 <%@page import="blackboard.persist.content.ContentDbLoader"%>
 <%@page import="blackboard.persist.navigation.CourseTocDbLoader"%>
-<%@ taglib uri="/bbNG" prefix="bbNG"%>
 <%@ taglib uri="/bbData" prefix="bbData"%>
+<%@ taglib uri="/bbNG" prefix="bbNG"%>
 <bbNG:includedPage ctxId="ctx">
 <%              
 			String errorMsg = "";
-			//BbPersistenceManager bbPm = BbServiceManager.getPersistenceService().getDbPersistenceManager();
-			BbPersistenceManager bbPm = PersistenceServiceFactory.getInstance().getDbPersistenceManager();
+			BbPersistenceManager bbPm = BbServiceManager.getPersistenceService().getDbPersistenceManager();			
 			Id courseId = bbPm.generateId(Course.DATA_TYPE,request.getParameter("course_id"));
-			String qLayout = request.getParameter("questLayout");
-			String newRules = request.getParameter("newRules");
-			JSONArray jA = new JSONArray(newRules);
-// 			for (int i = 0; i < jA.length(); i++) {
-// 				output += " " +  jA.getJSONObject(i).get("toId");	
-// 			}
+			String testVar = request.getParameter("questLayout");
 			CourseTocDbLoader cTocLoader = CourseTocDbLoader.Default.getInstance();
 			ContentDbLoader cntDbLoader = ContentDbLoader.Default.getInstance();
 			List<CourseToc> tList = cTocLoader.loadByCourseId(courseId);
@@ -68,7 +58,7 @@
 			for (Content c : children) {
 				if (c.getTitle().equalsIgnoreCase("QuestPath")) {
 					Content courseWork = cntDbLoader.loadById(c.getId());;
-					FormattedText ft = new FormattedText(qLayout, FormattedText.Type.PLAIN_TEXT);
+					FormattedText ft = new FormattedText(testVar, FormattedText.Type.PLAIN_TEXT);
 					courseWork.setBody(ft);
 					ContentDbPersister contentPersister =  ContentDbPersister.Default.getInstance(); 
        			   	contentPersister.persist(courseWork);
@@ -112,13 +102,6 @@
 			catch (Exception e) {
 				errorMsg = e.getLocalizedMessage();
 			}
-			try {
-				RuleBuilder rb = new RuleBuilder();
-				rb.buildRule(ctx, children, jA);
-			}
-			catch (Exception e) {
-				errorMsg = "Rules " + e.getLocalizedMessage();
-			}
 			
 %>
 <body>
@@ -128,12 +111,7 @@
 <script type="text/javascript">
 var errorMsg = '<%=errorMsg%>';
 if (errorMsg.length > 0) {
-	try{
-		console.log(errorMsg);
-	}
-	catch(err) {
-		alert(errorMsg);
-	}
+	alert(errorMsg);
 }
 history.go(-2);
 </script>

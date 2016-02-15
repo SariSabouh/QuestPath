@@ -6,8 +6,12 @@
  * Initial function to draw connectors after quest items have been put in place
  */
 (function() {
+
 	window.jsPlumbDemo = {
+
 			init : function() {			
+				//jsPlumb.setRenderMode(jsPlumb.VML);
+
 				var color = "black";
 				jsPlumb.importDefaults({
 					Connector : [ "Bezier", { curviness:40 } ],
@@ -18,8 +22,13 @@
 					EndpointHoverStyle : {fillStyle:"#ec9f2e" },			
 					Anchors :  [ "AutoDefault", "AutoDefault" ]
 				});
-				var arrowCommon = { foldback:1.0, fillStyle:color, width:14 };
+
+
+
+				var arrowCommon = { foldback:1.0, fillStyle:color, width:14 },
+
 				overlays = [[ "Arrow", { location:0.5 }, arrowCommon ]];
+
 				var procQuests = new Array();
 				for (var i = 0; i < quests.length; i++) {
 					for (var j = 0; j < quests[i].questPathItems.length; j++) {
@@ -51,65 +60,36 @@ function moveItems() {
 		var widthRatio = currentWidth/initWidth;
 		try {
 			for (var i = 0; i < questLayout.qItemLayout.length; i++) {
-				if (document.getElementById(questLayout.qItemLayout[i].extContentId)) {
-					var x = document.getElementById(questLayout.qItemLayout[i].extContentId);
-					x.style.top = (parseInt(questLayout.qItemLayout[i].top) * 1) + "px";
-					x.style.left = (parseInt(questLayout.qItemLayout[i].left) * widthRatio) + "px";
-				}
+				var x = document.getElementById(questLayout.qItemLayout[i].extContentId);
+				x.style.top = (parseInt(questLayout.qItemLayout[i].top) * 1) + "px";
+				x.style.left = (parseInt(questLayout.qItemLayout[i].left) * widthRatio) + "px";
 			}
-		} catch(exception) {if (questTier != null) {initLayout();}}//default to init layout if unable to build layout
+		} catch(exception) {initLayout();}//default to init layout if unable to build layout
 	} else {
-		if (questTier != null) {initLayout();}
+		initLayout();
 	}
 };
 
 /*
  * Pause for other script files to be loaded
  */
-function waitForDependencies() {
-	//if (typeof jQueryLoaded === 'undefined' || typeof questsLoaded === 'undefined' || typeof jsPlumbLoaded === 'undefined'
-	//	|| typeof uiMinLoaded === 'undefined' || typeof uiTouchLoaded === 'undefined') {        
-	//	setTimeout(waitForDependencies, 0200);}    
-	//else {
-		jsPlumb.bind("ready", function() {
-			if (questTier != null) {initLayout();} 
-			moveItems(); 
-			positionNonQuestItems();
-			setTimeout(jsPlumbDemo.init, 0200); 
-			jQuery(function() {
-		  	    jQuery( "#chartDiv" ).dialog({
-		  	      autoOpen: false, modal: true, height:650, width:650,
-		  	      buttons: {Ok: function() {jQuery( this ).dialog( "close" );}}
-		   		 });
-		    });
-			jQuery(function() {
-			 jQuery( "#questpathBlockContainer").tooltip();
-			});
-			if(instructorView) {
-				setInstructorCSSClass(questStats);
-				jQuery('.questItem').click(
-		    		function() {
-						for (var i = 0; i < questStats.length; i++) {
-							if (questStats[i].externalContentId === this.id) {
-								//console.log(questStats);
-								reportingFunction(questStats[i]);
-								jQuery('#chartDiv').dialog("open");
-							}
-						}
-		    		});
-			}
-		});
+function waitForDependencies() {    
+	if (typeof jQueryLoaded === 'undefined' || typeof questsLoaded === 'undefined' || typeof jsPlumbLoaded === 'undefined'
+		|| typeof uiMinLoaded === 'undefined' || typeof uiTouchLoaded === 'undefined') {        
+		setTimeout(waitForDependencies, 0200);}    
+	else {
+		jsPlumb.bind("ready", function() {initLayout(); moveItems(); setTimeout(jsPlumbDemo.init, 0200);});
+	}
 }
+
+waitForDependencies();
 
 function openAssignment(link) {
 	urlLoc = window.location;
 	if (urlLoc.toString().indexOf('detach_module') !== -1) {
-		//window.location.href = '../../../blackboard/' + link;	
-		window.location.href = '/webapps/' + link;
+		window.location.href = '../../../blackboard/' + link;	
 	}
-	else {
-		window.location.href = '/webapps/' + link;
-	}
+	else {window.location.href = '../../' + link;}
 
 }
 
@@ -126,48 +106,21 @@ function setLocation() {
 		for (var j = 0; j < quests[i].questPathItems.length; j++) {
 			var qItem = new Object();
 			qItem.extContentId = quests[i].questPathItems[j].extContentId;
+			//qItem.top = document.getElementById(i + '-' + quests[i].questPathItems[j].name).style.top;
+			//qItem.left = document.getElementById(i + '-' + quests[i].questPathItems[j].name).style.left;
 			qItem.top = document.getElementById(quests[i].questPathItems[j].extContentId).style.top;
 			qItem.left = document.getElementById(quests[i].questPathItems[j].extContentId).style.left;
 			qLayout.qItemLayout[k] = qItem;
 			k++;
 		}
-	}
-//	var nonQuestList = jQuery('.newQuestItem.nonQuestItem');
-//	nonQuestList.each(function() {
-//		console.log(connectionExist(jQuery(this).attr('id')));
-//      if connectionExists push id to list array, use this when setting location
-//	});
-
-	var newQuestList = jQuery('.newQuestItem');
-	newQuestList.each(function() {
-		if (connectionExist(jQuery(this).attr('id'))) {
-			var qItem = new Object();
-			qItem.extContentId = jQuery(this).attr('id');
-			qItem.top = document.getElementById(qItem.extContentId).style.top;
-			qItem.left = document.getElementById(qItem.extContentId).style.left;
-			qLayout.qItemLayout[k] = qItem;
-			k++;
-		}
-	});
-	var nonQuestList = jQuery('.nonQuestItem');
-	nonQuestList.each(function() {
-		if (connectionExist(jQuery(this).attr('id'))) {
-			var qItem = new Object();
-			qItem.extContentId = jQuery(this).attr('id');
-			qItem.top = document.getElementById(qItem.extContentId).style.top;
-			qItem.left = document.getElementById(qItem.extContentId).style.left;
-			qLayout.qItemLayout[k] = qItem;
-			k++;
-		}
-	});
+	} 
 	document.getElementById("questLayout").value = JSON.stringify(qLayout);
-	document.getElementById("newRules").value = JSON.stringify(newRules);
 }
 
 /*
  * Redraw as page is resized
  */
-window.onresize=function(){moveItems(); jsPlumbDemo.init(); positionNonQuestItems();};
+window.onresize=function(){moveItems(); jsPlumbDemo.init();};
 
 /*
  * Build initial layout graph
@@ -189,192 +142,4 @@ function initLayout() {
 	}
 }
 
-var totalStudents = 0;
-
-function setInstructorCSSClass(questStats) {
-	for (var i = 0; i < questStats.length; i++) {
-		var hybridPassed = questStats[i].passedCount;
-		totalStudents = questStats[i].passedCount + questStats[i].attemptedCount + questStats[i].lockedCount;
-		var percentPassed = Math.round(hybridPassed/totalStudents / .1) * 10;
-		if (totalStudents === 0) {
-			percentPassed = 0;
-		}
-		jQuery('#' + questStats[i].externalContentId).addClass('p' + percentPassed);
-	}
-}
-
-var newRules = Array();
-
-function buildDialog() {
-	jQuery( "#ruleDialog" ).dialog({
-	      autoOpen: false,
-	      height: 300,
-	      width: 500,
-	      modal: true, 
-	      buttons: {
-	    	  "Save": function() {
-	    		  if (validateRules()) {
-	    			  jQuery( this ).dialog( "close" );
-	    		  }
-	           },
-	         "Save and Add Another Criteria": function() {
-	    		  if (validateRules()) {
-	    			  initDialog(true);
-	    		  };
-	         },
-	         "Cancel": function() {
-	        	 jQuery( this ).dialog( "close" );
-	         }
-	      }
-	});
-	jQuery('#ruleButton').on('click', function() {
-		jQuery('#ruleNumber').val((new Date).getTime());
-		initDialog(false);
-		jQuery('#ruleDialog').dialog("open");
-	});
-}
-
-function initDialog(disableTo) {
-
-	if (disableTo) {
-		jQuery('#toItem').prop('disabled', true);
-	}else  {
-		jQuery('#toItem').prop('disabled', false);
-		//This logic only allows items without adaptive release to be in the TO drop down
-		//jQuery('#toItem').empty();
-		//var nonQuestList = jQuery('.nonQuestItem');
-		//nonQuestList.each(function() {
-		//	jQuery('#toItem')
-	    //   .append(jQuery("<option></option>")
-	    //    .attr("value",jQuery(this).attr('id'))
-	    //    .text(jQuery(this).html())); 
-		//});
-	}
-	jQuery('#minValue').val("" );
-}
-
-function validateRules() {
-	  var errorFree = true;
-	  var fromId = jQuery('#fromItem').val();
-	  var toId = jQuery('#toItem').val();
-	  var typeRule = jQuery( "input:radio[name=ruleRadio]:checked" ).val();
-	  var minValue = jQuery('#minValue').val();
-	  if (fromId.length === 0) {
-		  alert("From Quest Item Required");
-		  errorFree = false;
-	  }
-	  if (toId.length === 0) {
-		  alert("To Quest Item Required");
-		  errorFree = false;
-	  }
-	  if (toId === fromId) {
-		  alert("From and To Must Be Different Items");
-		  errorFree = false;
-	  }
-	  if (typeRule.length == 0) {
-		  alert("Adaptive Release Type Rule Required");
-		  errorFree = false;
-	  }
-	  if (isNaN(minValue) || minValue.length === 0 || minValue === 0) {
-		  alert("Minimum Score Must Be Numeric and Greater Than 0");
-		  errorFree = false;
-	  }
-	  if (errorFree) {
-		  var rule = new Object();
-		  rule.fromId = fromId;
-		  rule.toId = toId;
-		  rule.typeRule = typeRule;
-		  rule.minValue = minValue;
-		  rule.ruleNumber = jQuery('#ruleNumber').val();
-		  newRules.push(rule);
-		  buildNewConnection(fromId, toId);
-	  };
-	  return errorFree;
-}
-
-function buildNewConnection(fromId, toId) {
-	//jQuery('#' + toId).addClass("questItem").removeClass("nonQuestItem");
-	jQuery('#' + toId).addClass("questItem").addClass("newQuestItem");
-	var color = "red";
-	jsPlumb.importDefaults({
-		Connector : [ "Bezier", { curviness:40 } ],
-		DragOptions : { cursor: "pointer", zIndex:2000 },
-		PaintStyle : { strokeStyle:color, lineWidth:3 },
-		EndpointStyle : { radius:3, fillStyle:color },
-		HoverPaintStyle : {strokeStyle:"red" },
-		EndpointHoverStyle : {fillStyle:"#ec9f2e" },			
-		Anchors :  [ "AutoDefault", "AutoDefault" ]
-	});
-	var arrowCommon = { foldback:1.0, fillStyle:color, width:14 };
-	var overlays = [[ "Arrow", { location:0.5 }, arrowCommon ]];
-	//TODO what gets returned here?
-	jsPlumb.connect({source:fromId, target:toId, overlays:overlays}).bind("dblclick", function(connection, originalEvent)  {removeNewConnection(connection);});
-	if (questDraggable) {
-		jsPlumb.draggable(jsPlumb.getSelector(".questItem"),{containment:"parent"});
-	}
-}
-
-function removeNewConnection(connection) {
-	var c = confirm("Confirm Deletion!");
-	var len = newRules.length;
-	if (c === true) {
-		while (len--) {
-			if (newRules[len].toId === connection.targetId && newRules[len].fromId === connection.sourceId) {
-				newRules.splice(len,1);
-			}
-		}
-		jQuery('#' + connection.targetId).addClass("questItem").removeClass("newQuestItem");
-		jQuery('#' + connection.targetId).addClass("questItem").addClass("nonQuestItem");
-		jsPlumb.detach(connection);
-	}
-}
-
-function positionNonQuestItems() {
-	nonQuestList = jQuery('.nonQuestItem');
-	init_height = document.getElementById('questpathBlockContainer').offsetHeight;
-	init_width = document.getElementById('questpathBlockContainer').offsetWidth;
-	var newTop = init_height - init_height/15;
-	var newLeft = 0;
-	var count = 0;
-	nonQuestList.each(function() {
-		document.getElementById(jQuery( this ).attr('id')).style.top = newTop + "px";
-		document.getElementById(jQuery( this ).attr('id')).style.left = newLeft + "px";
-		count++;
-		newLeft += init_width/10;
-		if (count === 9) {
-			newLeft = 0;
-			newTop = newTop - init_height/15;
-			count = 0;
-		}
-	});
-}
-
-//TODO modify to allow source to be newQuestItem
-//function testGetConnectors() {
-//	var targetArray = new Array();
-//	var nonQuestList = jQuery('.newQuestItem');
-//	nonQuestList.each(function() {
-//		targetArray.push(jQuery(this).attr('id'));
-//	});
-//	console.log(targetArray);
-//	var connectionList = jsPlumb.getConnections({target: targetArray});
-//	console.log(connectionList);
-//	console.log(newRules);
-//}
-
-//function testGetConnectorsX() {
-//	var nonQuestList = jQuery('.newQuestItem.nonQuestItem');
-//	nonQuestList.each(function() {
-//		console.log(connectionExist(jQuery(this).attr('id')));
-//      if connectionExists push id to list array, use this when setting location
-//	});
-//}
-//
-function connectionExist(id) {
-	var targetArray = new Array();
-	targetArray.push(id);
-	var elementList = jsPlumb.selectEndpoints({
-		element: targetArray 
-	});
-	return (elementList.length > 0) ? "true" : "false";
-}
+//jsPlumb.bind("ready", function() {moveItems(); jsPlumbDemo.init();});

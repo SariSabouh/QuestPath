@@ -21,7 +21,6 @@ public class QuestPath {
 	private List<Integer> rewardItems = new ArrayList<Integer>();
 	private List<Integer> lockedItems = new ArrayList<Integer>();
 
-
 	public List<QuestPathItem> getQuestPathItems() {
 		return questPathItems;
 	}

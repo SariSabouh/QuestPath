@@ -14,16 +14,15 @@ import blackboard.data.content.avlrule.GradeRangeCriteria;
 import blackboard.data.gradebook.Lineitem;
 import blackboard.data.gradebook.Score;
 import blackboard.data.gradebook.impl.OutcomeDefinition;
-import blackboard.persist.Id;
 import blackboard.persist.KeyNotFoundException;
 import blackboard.persist.PersistenceException;
 import blackboard.persist.content.avlrule.AvailabilityCriteriaDbLoader;
 import blackboard.persist.gradebook.impl.OutcomeDefinitionDbLoader;
+import blackboard.platform.context.Context;
 
 import com.jsu.cs521.questpath.buildingblock.object.QuestPath;
 import com.jsu.cs521.questpath.buildingblock.object.QuestPathItem;
 import com.jsu.cs521.questpath.buildingblock.object.QuestRule;
-import com.jsu.cs521.questpath.buildingblock.object.QuestStats;
 import com.jsu.cs521.questpath.buildingblock.object.RuleCriteria;
 
 /**
@@ -39,19 +38,6 @@ public class QuestPathUtil {
 	 * @param allItems
 	 * @return
 	 */
-	public List<QuestPathItem> findNonAdaptiveReleaseContent(List<QuestPathItem> allItems) {
-		List<QuestPathItem> finalList = new ArrayList<QuestPathItem>();
-		for (QuestPathItem qPI : allItems) {
-			if (qPI.getChildContent().size() == 0 && qPI.getParentContent().size() == 0) 
-			{
-				if (!qPI.getName().toUpperCase().equals("QUESTPATH")) {
-					finalList.add(qPI);
-				}
-			}
-		}
-		return finalList;
-	}
-	
 	public List<QuestPathItem> removeNonAdaptiveReleaseContent(List<QuestPathItem> allItems) {
 		List<QuestPathItem> finalList = new ArrayList<QuestPathItem>();
 		for (QuestPathItem qPI : allItems) {
@@ -103,23 +89,9 @@ public class QuestPathUtil {
 	 */
 	public List<QuestPathItem> setParentChildList(List<QuestPathItem> allItems, List<QuestRule> allRules) {
 		for (QuestPathItem item : allItems) {
-			String unlockRule = "";
-			boolean subsequentRule = false;
 			for (QuestRule rule : allRules) {
-				boolean firstCriteria = true;
 				if (rule.getExtContentId().equals(item.getExtContentId())) {
-					if (!subsequentRule) {
-						unlockRule = " Item will be unlocked when the following Quest Path Items are completed: ";
-					}
 					for (RuleCriteria crit : rule.getCriterias()) {
-						if (subsequentRule) {
-							unlockRule += " OR "; 
-						}
-						if (!firstCriteria) {
-							unlockRule += " AND ";
-						}
-						unlockRule += contentMap.get(crit.getParentContent());
-						subsequentRule = false; firstCriteria = false;
 						item.getParentContent().add(crit.getParentContent());
 						for(QuestPathItem item2 : allItems) {
 							if(item2.getExtContentId().equals(crit.getParentContent())) {
@@ -127,23 +99,21 @@ public class QuestPathUtil {
 							}
 						}
 					}
-					subsequentRule = true;
 				}
 			}
 			if (item.getParentContent().size() > 0) {
-//				boolean subsequentRule = false;
-//				if (item.getUnlockRule().length() > 0) {subsequentRule = true;}
-//				StringBuilder sb = new StringBuilder();
-//				for (String pc : item.getParentContent()) {
-//					if (!subsequentRule) {
-//						sb.append(" Item will be unlocked when the following Quest Path Items are completed: " + contentMap.get(pc));
-//						subsequentRule = true;
-//					} else {
-//						sb.append("," + contentMap.get(pc));
-//					}
-//				}
-//				item.setUnlockRule(sb.toString());
-				item.setUnlockRule(unlockRule + ".");
+				boolean subsequentRule = false;
+				if (item.getUnlockRule().length() > 0) {subsequentRule = true;}
+				StringBuilder sb = new StringBuilder();
+				for (String pc : item.getParentContent()) {
+					if (!subsequentRule) {
+						sb.append(" Item will be unlocked when the following Quest Path Items are completed: " + contentMap.get(pc));
+						subsequentRule = true;
+					} else {
+						sb.append("," + contentMap.get(pc));
+					}
+				}
+				item.setUnlockRule(sb.toString());
 			}
 		}
 		return allItems;
@@ -158,7 +128,7 @@ public class QuestPathUtil {
 	 * @param lineitems
 	 * @return
 	 */
-	public List<QuestPathItem> buildInitialList(Id cmID, List<Content> contentItems, List<Lineitem> lineitems, boolean buildContent) {
+	public List<QuestPathItem> buildInitialList(Context context, List<Content> contentItems, List<Lineitem> lineitems) {
 		List<QuestPathItem> initialList = new ArrayList<QuestPathItem>();
 		for (Content c : contentItems) {
 			QuestPathItem newQP = new QuestPathItem();
@@ -170,7 +140,7 @@ public class QuestPathUtil {
 					if (li.getType().equals("Assignment") || li.getType().equals("Test")) {
 						newQP.setPointsPossible(li.getPointsPossible());
 						for (Score score : li.getScores()) {
-							if (score.getCourseMembershipId().equals(cmID)) {
+							if (score.getCourseMembershipId().equals(context.getCourseMembership().getId())) {
 								if (score.getOutcome().getScore() > newQP.getPointsEarned()) {
 									newQP.setPointsEarned(score.getOutcome().getScore());
 								}
@@ -183,38 +153,9 @@ public class QuestPathUtil {
 				}
 			}
 			initialList.add(newQP);
-			if (buildContent) {
-				contentMap.put(c.getId().getExternalString(), c.getTitle());
-			}
+			contentMap.put(c.getId().getExternalString(), c.getTitle());
 		}
 		return initialList;
-	}
-
-	//Update Score information for each CourseMembership ID
-	public List<QuestPathItem> updateQuestPathItem(List<QuestPathItem> items, List<Lineitem> lineitems, Id cm) {
-		for (QuestPathItem c : items) {
-			c.setPointsEarned(0);
-			c.setPointsPossible(0);
-			c.setPercentageEarned(0);
-			for(Lineitem li : lineitems) {
-				if (li.getName().equals(c.getName())) {
-					if (li.getType().equals("Assignment") || li.getType().equals("Test")) {
-						c.setPointsPossible(li.getPointsPossible());
-						for (Score score : li.getScores()) {
-							if (score.getCourseMembershipId().equals(cm)) {
-								if (score.getOutcome().getScore() > c.getPointsEarned()) {
-									c.setPointsEarned(score.getOutcome().getScore());
-								}
-							}
-						}
-						if (c.getPointsPossible() > 0) {
-							c.setPercentageEarned(c.getPointsEarned()/c.getPointsPossible() * 100);
-						}
-					}
-				}
-			}
-		}
-		return items;
 	}
 
 	/**
@@ -313,7 +254,7 @@ public class QuestPathUtil {
 								if (ruleC.isGradeRange()) {
 									if (item.getPointsEarned() > 0 &&  item.getPointsEarned() < ruleC.getMinScore()) {
 										attempted = true;
-										item.setCompleteRule(" Rule " + i + " Quest Path Item will be complete when a score of " + ruleC.getMinScore() +  " or higher is scored.");
+										item.setCompleteRule("Rule " + i + " Quest Path Item will be complete when a score of " + ruleC.getMinScore() +  " or higher is scored.");
 										i++;
 									}
 									else if (item.getPointsEarned() >= ruleC.getMinScore()) {
@@ -420,19 +361,9 @@ public class QuestPathUtil {
 		return qp;
 	}
 	
-	public String qpathsToJson(List<QuestPath> qPaths) {
+	public String toJson(List<QuestPath> qPaths) {
 		try {
 		JSONArray jA = new JSONArray(qPaths);
-		return jA.toString();
-		}
-		catch (Exception e) {
-			return e.getLocalizedMessage();
-		}
-	}
-	
-	public String statsToJson(List<QuestStats> stats) {
-		try {
-		JSONArray jA = new JSONArray(stats);
 		return jA.toString();
 		}
 		catch (Exception e) {

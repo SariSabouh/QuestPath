@@ -5,6 +5,8 @@ import java.util.List;
 
 import org.json.JSONArray;
 
+import blackboard.data.content.Content;
+import blackboard.persist.Id;
 
 import com.jsu.cs521.questpath.buildingblock.object.QuestPath;
 import com.jsu.cs521.questpath.buildingblock.object.QuestPathItem;
