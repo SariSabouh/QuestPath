@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.jsu.cs521.questpath.buildingblock.object.QuestPath;
 import com.jsu.cs521.questpath.buildingblock.object.QuestPathItem;
 import com.jsu.cs521.questpath.buildingblock.object.QuestRule;
 import com.jsu.cs521.questpath.buildingblock.object.RuleCriteria;
@@ -204,38 +205,550 @@ public class QuestPathUtilTest {
 	}
 
 	@Test
+	@Ignore
 	public void testUpdateQuestPathItem() {
-		fail("Not yet implemented");
+//		qpUtil.updateQuestPathItem(items, lineitems, cm);
 	}
 
 	@Test
+	@Ignore
 	public void testBuildQuestRules() {
-		fail("Not yet implemented");
+//		qpUtil.buildQuestRules(rules, avCriLoader, defLoad)
 	}
 
 	@Test
-	public void testSetGradableQuestPathItemStatus() {
-		fail("Not yet implemented");
+	public void testSetGradableQuestPathItemStatusLastQuestItemPassed() {
+		List<QuestPathItem> items = new ArrayList<QuestPathItem>();
+		List<QuestRule> rules = new ArrayList<QuestRule>();
+		QuestRule rule = new QuestRule();
+		List<RuleCriteria> criterias = new ArrayList<RuleCriteria>();
+		RuleCriteria criteria = new RuleCriteria();
+		criteria.setGradePercent(true);
+		criteria.setMaxScore(100);
+		criteria.setMinScore(50);
+		criterias.add(criteria);
+		rule.setCriterias(criterias);
+		rule.setExtContentId("RuleId");
+		rule.setRuleId(Id.newId(AvailabilityRule.DATA_TYPE));
+		rules.add(rule);
+		QuestPathItem item = new QuestPathItem();
+		item.setGradable(true);
+		item.setLastQuestItem(true);
+		item.setPercentageEarned(81);
+		items.add(item);
+		items = qpUtil.setGradableQuestPathItemStatus(items, rules);
+		assertEquals(true, items.get(0).isPassed());
+		assertEquals(false, items.get(0).isAttempted());
+	}
+	
+	@Test
+	public void testSetGradableQuestPathItemStatusLastQuestItemAttempted() {
+		List<QuestPathItem> items = new ArrayList<QuestPathItem>();
+		List<QuestRule> rules = new ArrayList<QuestRule>();
+		QuestRule rule = new QuestRule();
+		List<RuleCriteria> criterias = new ArrayList<RuleCriteria>();
+		RuleCriteria criteria = new RuleCriteria();
+		criteria.setGradePercent(true);
+		criteria.setMaxScore(100);
+		criteria.setMinScore(50);
+		criterias.add(criteria);
+		rule.setCriterias(criterias);
+		rule.setExtContentId("RuleId");
+		rule.setRuleId(Id.newId(AvailabilityRule.DATA_TYPE));
+		rules.add(rule);
+		QuestPathItem item = new QuestPathItem();
+		item.setGradable(true);
+		item.setLastQuestItem(true);
+		item.setPointsEarned(70);
+		items.add(item);
+		items = qpUtil.setGradableQuestPathItemStatus(items, rules);
+		assertEquals(false, items.get(0).isPassed());
+		assertEquals(true, items.get(0).isAttempted());
+		assertEquals(" Quest Path Item will be complete when a score of 80% or higher is scored.", items.get(0).getCompleteRule());
+	}
+	
+	@Test
+	public void testSetGradableQuestPathItemStatusLastQuestItemNotAttempted() {
+		List<QuestPathItem> items = new ArrayList<QuestPathItem>();
+		List<QuestRule> rules = new ArrayList<QuestRule>();
+		QuestRule rule = new QuestRule();
+		List<RuleCriteria> criterias = new ArrayList<RuleCriteria>();
+		RuleCriteria criteria = new RuleCriteria();
+		criteria.setGradePercent(true);
+		criteria.setMaxScore(100);
+		criteria.setMinScore(50);
+		criterias.add(criteria);
+		rule.setCriterias(criterias);
+		rule.setExtContentId("RuleId");
+		rule.setRuleId(Id.newId(AvailabilityRule.DATA_TYPE));
+		rules.add(rule);
+		QuestPathItem item = new QuestPathItem();
+		item.setGradable(true);
+		item.setLastQuestItem(true);
+		items.add(item);
+		items = qpUtil.setGradableQuestPathItemStatus(items, rules);
+		assertEquals(false, items.get(0).isPassed());
+		assertEquals(false, items.get(0).isAttempted());
+	}
+	
+	@Test
+	public void testSetGradableQuestPathItemStatusLastQuestItemNotGradable() {
+		List<QuestPathItem> items = new ArrayList<QuestPathItem>();
+		List<QuestRule> rules = new ArrayList<QuestRule>();
+		QuestRule rule = new QuestRule();
+		List<RuleCriteria> criterias = new ArrayList<RuleCriteria>();
+		RuleCriteria criteria = new RuleCriteria();
+		criteria.setGradePercent(true);
+		criteria.setMaxScore(100);
+		criteria.setMinScore(50);
+		criterias.add(criteria);
+		rule.setCriterias(criterias);
+		rule.setExtContentId("RuleId");
+		rule.setRuleId(Id.newId(AvailabilityRule.DATA_TYPE));
+		rules.add(rule);
+		QuestPathItem item = new QuestPathItem();
+		item.setGradable(false);
+		item.setLastQuestItem(true);
+		items.add(item);
+		items = qpUtil.setGradableQuestPathItemStatus(items, rules);
+		assertEquals(false, items.get(0).isPassed());
+		assertEquals(false, items.get(0).isAttempted());
+	}
+	
+	@Test
+	public void testSetGradableQuestPathItemStatusRuleCriteriaGradePercentagePassed() {
+		List<QuestPathItem> items = new ArrayList<QuestPathItem>();
+		List<QuestRule> rules = new ArrayList<QuestRule>();
+		QuestRule rule = new QuestRule();
+		List<RuleCriteria> criterias = new ArrayList<RuleCriteria>();
+		RuleCriteria criteria = new RuleCriteria();
+		criteria.setGradePercent(true);
+		criteria.setMaxScore(100);
+		criteria.setMinScore(50);
+		criteria.setParentContent("Parent");
+		criterias.add(criteria);
+		rule.setCriterias(criterias);
+		rule.setExtContentId("RuleId");
+		rule.setRuleId(Id.newId(AvailabilityRule.DATA_TYPE));
+		rules.add(rule);
+		QuestPathItem item = new QuestPathItem();
+		item.setGradable(true);
+		item.setExtContentId("Parent");
+		item.setPointsEarned(60);
+		item.setPercentageEarned(60);
+		items.add(item);
+		items = qpUtil.setGradableQuestPathItemStatus(items, rules);
+		assertEquals(true, items.get(0).isPassed());
+		assertEquals(false, items.get(0).isAttempted());
+	}
+	
+	@Test
+	public void testSetGradableQuestPathItemStatusRuleCriteriaGradePercentageAttempted() {
+		List<QuestPathItem> items = new ArrayList<QuestPathItem>();
+		List<QuestRule> rules = new ArrayList<QuestRule>();
+		QuestRule rule = new QuestRule();
+		List<RuleCriteria> criterias = new ArrayList<RuleCriteria>();
+		RuleCriteria criteria = new RuleCriteria();
+		criteria.setGradePercent(true);
+		criteria.setMaxScore(100);
+		criteria.setMinScore(50);
+		criteria.setParentContent("Parent");
+		criterias.add(criteria);
+		rule.setCriterias(criterias);
+		rule.setExtContentId("RuleId");
+		rule.setRuleId(Id.newId(AvailabilityRule.DATA_TYPE));
+		rules.add(rule);
+		QuestPathItem item = new QuestPathItem();
+		item.setGradable(true);
+		item.setExtContentId("Parent");
+		item.setPointsEarned(30);
+		item.setPercentageEarned(30);
+		items.add(item);
+		items = qpUtil.setGradableQuestPathItemStatus(items, rules);
+		assertEquals(false, items.get(0).isPassed());
+		assertEquals(true, items.get(0).isAttempted());
+		assertEquals(" Rule 1 Quest Path Item will be complete when a score of 50.0% or higher is scored.", items.get(0).getCompleteRule());
+	}
+	
+	@Test
+	public void testSetGradableQuestPathItemStatusRuleCriteriaGradePercentageNotAttempted() {
+		List<QuestPathItem> items = new ArrayList<QuestPathItem>();
+		List<QuestRule> rules = new ArrayList<QuestRule>();
+		QuestRule rule = new QuestRule();
+		List<RuleCriteria> criterias = new ArrayList<RuleCriteria>();
+		RuleCriteria criteria = new RuleCriteria();
+		criteria.setGradePercent(true);
+		criteria.setMaxScore(100);
+		criteria.setMinScore(50);
+		criteria.setParentContent("Parent");
+		criterias.add(criteria);
+		rule.setCriterias(criterias);
+		rule.setExtContentId("RuleId");
+		rule.setRuleId(Id.newId(AvailabilityRule.DATA_TYPE));
+		rules.add(rule);
+		QuestPathItem item = new QuestPathItem();
+		item.setGradable(true);
+		item.setExtContentId("Parent");
+		items.add(item);
+		items = qpUtil.setGradableQuestPathItemStatus(items, rules);
+		assertEquals(false, items.get(0).isPassed());
+		assertEquals(false, items.get(0).isAttempted());
+		assertEquals(" Rule 1 Quest Path Item will be complete when a score of 50.0% or higher is scored.", items.get(0).getCompleteRule());
+	}
+	
+	@Test
+	public void testSetGradableQuestPathItemStatusRuleCriteriaGradeRangePassed() {
+		List<QuestPathItem> items = new ArrayList<QuestPathItem>();
+		List<QuestRule> rules = new ArrayList<QuestRule>();
+		QuestRule rule = new QuestRule();
+		List<RuleCriteria> criterias = new ArrayList<RuleCriteria>();
+		RuleCriteria criteria = new RuleCriteria();
+		criteria.setGradeRange(true);
+		criteria.setMaxScore(100);
+		criteria.setMinScore(50);
+		criteria.setParentContent("Parent");
+		criterias.add(criteria);
+		rule.setCriterias(criterias);
+		rule.setExtContentId("RuleId");
+		rule.setRuleId(Id.newId(AvailabilityRule.DATA_TYPE));
+		rules.add(rule);
+		QuestPathItem item = new QuestPathItem();
+		item.setGradable(true);
+		item.setExtContentId("Parent");
+		item.setPointsEarned(60);
+		item.setPercentageEarned(60);
+		items.add(item);
+		items = qpUtil.setGradableQuestPathItemStatus(items, rules);
+		assertEquals(true, items.get(0).isPassed());
+		assertEquals(false, items.get(0).isAttempted());
+	}
+	
+	@Test
+	public void testSetGradableQuestPathItemStatusRuleCriteriaGradeRangeAttempted() {
+		List<QuestPathItem> items = new ArrayList<QuestPathItem>();
+		List<QuestRule> rules = new ArrayList<QuestRule>();
+		QuestRule rule = new QuestRule();
+		List<RuleCriteria> criterias = new ArrayList<RuleCriteria>();
+		RuleCriteria criteria = new RuleCriteria();
+		criteria.setGradeRange(true);
+		criteria.setMaxScore(100);
+		criteria.setMinScore(50);
+		criteria.setParentContent("Parent");
+		criterias.add(criteria);
+		rule.setCriterias(criterias);
+		rule.setExtContentId("RuleId");
+		rule.setRuleId(Id.newId(AvailabilityRule.DATA_TYPE));
+		rules.add(rule);
+		QuestPathItem item = new QuestPathItem();
+		item.setGradable(true);
+		item.setExtContentId("Parent");
+		item.setPointsEarned(30);
+		item.setPercentageEarned(30);
+		items.add(item);
+		items = qpUtil.setGradableQuestPathItemStatus(items, rules);
+		assertEquals(false, items.get(0).isPassed());
+		assertEquals(true, items.get(0).isAttempted());
+		assertEquals(" Rule 1 Quest Path Item will be complete when a score of 50.0 or higher is scored.", items.get(0).getCompleteRule());
+	}
+	
+	@Test
+	public void testSetGradableQuestPathItemStatusRuleCriteriaGradeRangeNotAttempted() {
+		List<QuestPathItem> items = new ArrayList<QuestPathItem>();
+		List<QuestRule> rules = new ArrayList<QuestRule>();
+		QuestRule rule = new QuestRule();
+		List<RuleCriteria> criterias = new ArrayList<RuleCriteria>();
+		RuleCriteria criteria = new RuleCriteria();
+		criteria.setGradeRange(true);
+		criteria.setMaxScore(100);
+		criteria.setMinScore(50);
+		criteria.setParentContent("Parent");
+		criterias.add(criteria);
+		rule.setCriterias(criterias);
+		rule.setExtContentId("RuleId");
+		rule.setRuleId(Id.newId(AvailabilityRule.DATA_TYPE));
+		rules.add(rule);
+		QuestPathItem item = new QuestPathItem();
+		item.setGradable(true);
+		item.setExtContentId("Parent");
+		items.add(item);
+		items = qpUtil.setGradableQuestPathItemStatus(items, rules);
+		assertEquals(false, items.get(0).isPassed());
+		assertEquals(false, items.get(0).isAttempted());
+		assertEquals(" Rule 1 Quest Path Item will be complete when a score of 50.0 or higher is scored.", items.get(0).getCompleteRule());
+	}
+	
+	@Test
+	public void testSetGradableQuestPathItemStatusRuleNotSameParentId() {
+		List<QuestPathItem> items = new ArrayList<QuestPathItem>();
+		List<QuestRule> rules = new ArrayList<QuestRule>();
+		QuestRule rule = new QuestRule();
+		List<RuleCriteria> criterias = new ArrayList<RuleCriteria>();
+		RuleCriteria criteria = new RuleCriteria();
+		criteria.setGradeRange(true);
+		criteria.setMaxScore(100);
+		criteria.setMinScore(50);
+		criteria.setParentContent("NotParent");
+		criterias.add(criteria);
+		rule.setCriterias(criterias);
+		rule.setExtContentId("RuleId");
+		rule.setRuleId(Id.newId(AvailabilityRule.DATA_TYPE));
+		rules.add(rule);
+		QuestPathItem item = new QuestPathItem();
+		item.setGradable(true);
+		item.setExtContentId("Parent");
+		items.add(item);
+		items = qpUtil.setGradableQuestPathItemStatus(items, rules);
+		assertEquals(false, items.get(0).isPassed());
+		assertEquals(false, items.get(0).isAttempted());
 	}
 
 	@Test
-	public void testSetLockOrUnlocked() {
-		fail("Not yet implemented");
+	public void testSetLockOrUnlockedWithNoParent() {
+		List<QuestPathItem> items = new ArrayList<QuestPathItem>();
+		List<QuestRule> rules = new ArrayList<QuestRule>();
+		QuestRule rule = new QuestRule();
+		List<RuleCriteria> criterias = new ArrayList<RuleCriteria>();
+		RuleCriteria criteria = new RuleCriteria();
+		criteria.setGradeRange(true);
+		criteria.setMaxScore(100);
+		criteria.setMinScore(50);
+		criteria.setParentContent("NotParent");
+		criterias.add(criteria);
+		rule.setCriterias(criterias);
+		rule.setExtContentId("RuleId");
+		rule.setRuleId(Id.newId(AvailabilityRule.DATA_TYPE));
+		rules.add(rule);
+		QuestPathItem item = new QuestPathItem();
+		item.setGradable(true);
+		item.setExtContentId("Parent");
+		items.add(item);
+		items = qpUtil.setLockOrUnlocked(items, rules);
+		assertEquals(true, items.get(0).isUnLocked());
+	}
+	
+	@Test
+	public void testSetLockOrUnlockedPassed() {
+		List<QuestPathItem> items = new ArrayList<QuestPathItem>();
+		List<QuestRule> rules = new ArrayList<QuestRule>();
+		QuestRule rule = new QuestRule();
+		List<RuleCriteria> criterias = new ArrayList<RuleCriteria>();
+		RuleCriteria criteria = new RuleCriteria();
+		criteria.setGradeRange(true);
+		criteria.setMaxScore(100);
+		criteria.setMinScore(50);
+		criteria.setParentContent("Parent");
+		criterias.add(criteria);
+		rule.setCriterias(criterias);
+		rule.setExtContentId("Parent");
+		rule.setRuleId(Id.newId(AvailabilityRule.DATA_TYPE));
+		rules.add(rule);
+		QuestPathItem item = new QuestPathItem();
+		item.setGradable(true);
+		item.setExtContentId("Parent");
+		item.setPassed(true);
+		List<String> parentContent = new ArrayList<String>();
+		parentContent.add("Parent");
+		item.setParentContent(parentContent);
+		items.add(item);
+		items = qpUtil.setLockOrUnlocked(items, rules);
+		assertEquals(true, items.get(0).isUnLocked());
+	}
+	
+	@Test
+	public void testSetLockOrUnlockedAttempted() {
+		List<QuestPathItem> items = new ArrayList<QuestPathItem>();
+		List<QuestRule> rules = new ArrayList<QuestRule>();
+		QuestRule rule = new QuestRule();
+		List<RuleCriteria> criterias = new ArrayList<RuleCriteria>();
+		RuleCriteria criteria = new RuleCriteria();
+		criteria.setGradeRange(true);
+		criteria.setMaxScore(100);
+		criteria.setMinScore(50);
+		criteria.setParentContent("Parent");
+		criterias.add(criteria);
+		rule.setCriterias(criterias);
+		rule.setExtContentId("Parent");
+		rule.setRuleId(Id.newId(AvailabilityRule.DATA_TYPE));
+		rules.add(rule);
+		QuestPathItem item = new QuestPathItem();
+		item.setGradable(true);
+		item.setPassed(false);
+		item.setExtContentId("Parent");
+		List<String> parentContent = new ArrayList<String>();
+		parentContent.add("Parent");
+		item.setParentContent(parentContent);
+		items.add(item);
+		items = qpUtil.setLockOrUnlocked(items, rules);
+		assertEquals(false, items.get(0).isUnLocked());
+		assertEquals(true, items.get(0).isLocked());
 	}
 
 	@Test
-	public void testSetQuest() {
-		fail("Not yet implemented");
+	public void testSetLockOrUnlockedNotSameId() {
+		List<QuestPathItem> items = new ArrayList<QuestPathItem>();
+		List<QuestRule> rules = new ArrayList<QuestRule>();
+		QuestRule rule = new QuestRule();
+		List<RuleCriteria> criterias = new ArrayList<RuleCriteria>();
+		RuleCriteria criteria = new RuleCriteria();
+		criteria.setGradeRange(true);
+		criteria.setMaxScore(100);
+		criteria.setMinScore(50);
+		criteria.setParentContent("Parent");
+		criterias.add(criteria);
+		rule.setCriterias(criterias);
+		rule.setExtContentId("RuleId");
+		rule.setRuleId(Id.newId(AvailabilityRule.DATA_TYPE));
+		rules.add(rule);
+		QuestPathItem item = new QuestPathItem();
+		item.setGradable(true);
+		item.setPassed(false);
+		item.setExtContentId("Parent");
+		List<String> parentContent = new ArrayList<String>();
+		parentContent.add("Parent");
+		item.setParentContent(parentContent);
+		items.add(item);
+		items = qpUtil.setLockOrUnlocked(items, rules);
+		assertEquals(false, items.get(0).isUnLocked());
+		assertEquals(false, items.get(0).isLocked());
+	}
+	
+	@Test
+	public void testSetLockOrUnlockedNotSameCriteriaId() {
+		List<QuestPathItem> items = new ArrayList<QuestPathItem>();
+		List<QuestRule> rules = new ArrayList<QuestRule>();
+		QuestRule rule = new QuestRule();
+		List<RuleCriteria> criterias = new ArrayList<RuleCriteria>();
+		RuleCriteria criteria = new RuleCriteria();
+		criteria.setGradeRange(true);
+		criteria.setMaxScore(100);
+		criteria.setMinScore(50);
+		criteria.setParentContent("RuleId");
+		criterias.add(criteria);
+		rule.setCriterias(criterias);
+		rule.setExtContentId("Parent");
+		rule.setRuleId(Id.newId(AvailabilityRule.DATA_TYPE));
+		rules.add(rule);
+		QuestPathItem item = new QuestPathItem();
+		item.setGradable(true);
+		item.setPassed(false);
+		item.setExtContentId("Parent");
+		List<String> parentContent = new ArrayList<String>();
+		parentContent.add("Parent");
+		item.setParentContent(parentContent);
+		items.add(item);
+		items = qpUtil.setLockOrUnlocked(items, rules);
+		assertEquals(false, items.get(0).isUnLocked());
+		assertEquals(false, items.get(0).isLocked());
 	}
 
 	@Test
-	public void testQpathsToJson() {
-		fail("Not yet implemented");
+	public void testSetQuestUnlockedPassed() {
+		QuestPath questPath = new QuestPath();
+		List<QuestPathItem> items = new ArrayList<QuestPathItem>();
+		QuestPathItem item = new QuestPathItem();
+		item.setPassed(true);
+		item.setUnLocked(true);
+		items.add(item);
+		questPath.setQuestPathItems(items);
+		questPath = qpUtil.setQuest(questPath);
+		assertEquals(0, questPath.getPassedQuests().get(0).intValue());
+		assertEquals(1, questPath.getPassedQuests().size());
 	}
-
+	
 	@Test
-	public void testStatsToJson() {
-		fail("Not yet implemented");
+	public void testSetQuestUnlockedNotGradable() {
+		QuestPath questPath = new QuestPath();
+		List<QuestPathItem> items = new ArrayList<QuestPathItem>();
+		QuestPathItem item = new QuestPathItem();
+		item.setUnLocked(true);
+		items.add(item);
+		questPath.setQuestPathItems(items);
+		questPath = qpUtil.setQuest(questPath);
+		assertEquals(0, questPath.getRewardItems().get(0).intValue());
+		assertEquals(1, questPath.getRewardItems().size());
+	}
+	
+	@Test
+	public void testSetQuestUnlockedAttempted() {
+		QuestPath questPath = new QuestPath();
+		List<QuestPathItem> items = new ArrayList<QuestPathItem>();
+		QuestPathItem item = new QuestPathItem();
+		item.setUnLocked(true);
+		item.setGradable(true);
+		item.setAttempted(true);
+		items.add(item);
+		questPath.setQuestPathItems(items);
+		questPath = qpUtil.setQuest(questPath);
+		assertEquals(0, questPath.getAttemptedQuests().get(0).intValue());
+		assertEquals(1, questPath.getAttemptedQuests().size());
+	}
+	
+	@Test
+	public void testSetQuestUnlockedOnly() {
+		QuestPath questPath = new QuestPath();
+		List<QuestPathItem> items = new ArrayList<QuestPathItem>();
+		QuestPathItem item = new QuestPathItem();
+		item.setUnLocked(true);
+		item.setGradable(true);
+		items.add(item);
+		questPath.setQuestPathItems(items);
+		questPath = qpUtil.setQuest(questPath);
+		assertEquals(0, questPath.getUnlockedQuests().get(0).intValue());
+		assertEquals(1, questPath.getUnlockedQuests().size());
+	}
+	
+	@Test
+	public void testSetQuestLockedGradable() {
+		QuestPath questPath = new QuestPath();
+		List<QuestPathItem> items = new ArrayList<QuestPathItem>();
+		QuestPathItem item = new QuestPathItem();
+		item.setLocked(true);
+		item.setGradable(true);
+		items.add(item);
+		questPath.setQuestPathItems(items);
+		questPath = qpUtil.setQuest(questPath);
+		assertEquals(0, questPath.getLockedQuests().get(0).intValue());
+		assertEquals(1, questPath.getLockedQuests().size());
+	}
+	
+	@Test
+	public void testSetQuestLocked() {
+		QuestPath questPath = new QuestPath();
+		List<QuestPathItem> items = new ArrayList<QuestPathItem>();
+		QuestPathItem item = new QuestPathItem();
+		item.setLocked(true);
+		items.add(item);
+		questPath.setQuestPathItems(items);
+		questPath = qpUtil.setQuest(questPath);
+		assertEquals(0, questPath.getLockedItems().get(0).intValue());
+		assertEquals(1, questPath.getLockedItems().size());
+	}
+	
+	@Test
+	public void testSetQuestLockedAttempted() {
+		QuestPath questPath = new QuestPath();
+		List<QuestPathItem> items = new ArrayList<QuestPathItem>();
+		QuestPathItem item = new QuestPathItem();
+		item.setLocked(true);
+		item.setAttempted(true);
+		items.add(item);
+		questPath.setQuestPathItems(items);
+		questPath = qpUtil.setQuest(questPath);
+		assertEquals(0, questPath.getLockedItems().get(0).intValue());
+		assertEquals(1, questPath.getLockedItems().size());
+	}
+	
+	@Test
+	public void testSetQuestGradable() {
+		QuestPath questPath = new QuestPath();
+		List<QuestPathItem> items = new ArrayList<QuestPathItem>();
+		QuestPathItem item = new QuestPathItem();
+		item.setGradable(true);
+		items.add(item);
+		questPath.setQuestPathItems(items);
+		questPath = qpUtil.setQuest(questPath);
+		assertEquals(0, questPath.getLockedItems().get(0).intValue());
+		assertEquals(1, questPath.getLockedItems().size());
 	}
 
 }
