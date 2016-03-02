@@ -289,7 +289,6 @@ function validateRules() {
 }
 
 function buildNewConnection(fromId, toId) {
-	console.log("Building Connection");
 	jQuery('#' + toId).addClass("questItem").addClass("newQuestItem");
 	var color = "red";
 	jsPlumb.importDefaults({
@@ -357,26 +356,46 @@ function connectionExist(id) {
 }
 
 function createsLoop(fromId, toId){
+	var allRules = Array();
 	var items = Array();
 	var children = Array();
 	for (var i = 0; i < quests.length; i++) {
 		for (var j = 0; j < quests[i].questPathItems.length; j++) {
-			items[j] = quests[i].questPathItems[j].extContentId;
-			children[j] = quests[i].questPathItems[j].childContent;
-		}
-	}
-	for(var i = 0; i < items.length; i++){
-		if(items[i] == toId){
-			if(children[i].indexOf(fromId) > -1){
-				return true;
+			for(var l = 0; l < quests[i].questPathItems[j].childContent.length; l++){
+				var rule = new Object();
+				rule.fromId = quests[i].questPathItems[j].extContentId;
+				rule.toId = quests[i].questPathItems[j].childContent[l];
+				allRules.push(rule);
 			}
-			else{
-			}
+			
 		}
 	}
 	for(var i = 0; i < newRules.length; i++){
-		if(newRules[i].toId == fromId && newRules[i].fromId == toId){
-			return true;
+		var rule = new Object();
+		rule.fromId = newRules[i].fromId;
+		rule.toId = newRules[i].toId;
+		allRules.push(rule); 
+	}
+	var rule = new Object();
+	rule.fromId = fromId;
+	rule.toId = toId;
+	return loopExists(allRules, rule, fromId);
+}
+
+function loopExists(allRules, rule, start){
+	for(var i = 0; i < allRules.length; i++){
+		if(allRules[i].fromId == rule.toId){
+			if(allRules[i].toId == start){
+				return true;
+			}
+			else{
+				var newRule = new Object();
+				newRule.fromId = allRules[i].fromId;
+				newRule.toId = allRules[i].toId;
+				if(loopExists(allRules, newRule, start)){
+					return true;
+				}
+			}
 		}
 	}
 	return false;
