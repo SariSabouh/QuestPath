@@ -273,9 +273,15 @@ function validateRules() {
 		  var rule = new Object();
 		  rule.fromId = fromId;
 		  rule.toId = toId;
+		  console.log("From " + fromId + " to " + toId);
+		  if(createsLoop(fromId, toId)){
+			  alert("Connection Will Create a Loop. Please Check Your Graph.")
+			  return;
+		  }
 		  rule.typeRule = typeRule;
 		  rule.minValue = minValue;
 		  rule.ruleNumber = jQuery('#ruleNumber').val();
+		  console.log(rule);
 		  newRules.push(rule);
 		  buildNewConnection(fromId, toId);
 	  };
@@ -283,7 +289,7 @@ function validateRules() {
 }
 
 function buildNewConnection(fromId, toId) {
-	//jQuery('#' + toId).addClass("questItem").removeClass("nonQuestItem");
+	console.log("Building Connection");
 	jQuery('#' + toId).addClass("questItem").addClass("newQuestItem");
 	var color = "red";
 	jsPlumb.importDefaults({
@@ -340,26 +346,7 @@ function positionNonQuestItems() {
 }
 
 //TODO modify to allow source to be newQuestItem
-//function testGetConnectors() {
-//	var targetArray = new Array();
-//	var nonQuestList = jQuery('.newQuestItem');
-//	nonQuestList.each(function() {
-//		targetArray.push(jQuery(this).attr('id'));
-//	});
-//	console.log(targetArray);
-//	var connectionList = jsPlumb.getConnections({target: targetArray});
-//	console.log(connectionList);
-//	console.log(newRules);
-//}
 
-//function testGetConnectorsX() {
-//	var nonQuestList = jQuery('.newQuestItem.nonQuestItem');
-//	nonQuestList.each(function() {
-//		console.log(connectionExist(jQuery(this).attr('id')));
-//      if connectionExists push id to list array, use this when setting location
-//	});
-//}
-//
 function connectionExist(id) {
 	var targetArray = new Array();
 	targetArray.push(id);
@@ -367,4 +354,33 @@ function connectionExist(id) {
 		element: targetArray 
 	});
 	return (elementList.length > 0) ? "true" : "false";
+}
+
+function createsLoop(fromId, toId){
+	var items = Array();
+	var children = Array();
+	for (var i = 0; i < quests.length; i++) {
+		for (var j = 0; j < quests[i].questPathItems.length; j++) {
+			items[j] = quests[i].questPathItems[j].extContentId;
+			children[j] = quests[i].questPathItems[j].childContent;
+		}
+	}
+	for(var i = 0; i < items.length; i++){
+		if(items[i] == toId){
+			if(children[i].indexOf(fromId) > -1){
+				console.log("Item " + toId + " is connected with " + fromId);
+				return true;
+			}
+			else{
+				console.log("Item " + toId + " does not connecte with " + fromId);
+			}
+		}
+	}
+	for(var i = 0; i < newRules.length; i++){
+		if(newRules[i].toId == fromId && newRules[i].fromId == toId){
+			console.log("Item " + toId + " is connected with " + fromId);
+			return true;
+		}
+	}
+	return false;
 }

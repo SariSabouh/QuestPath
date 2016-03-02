@@ -18,6 +18,7 @@ import blackboard.persist.Id;
 import blackboard.persist.KeyNotFoundException;
 import blackboard.persist.PersistenceException;
 import blackboard.persist.content.avlrule.AvailabilityCriteriaDbLoader;
+import blackboard.persist.content.avlrule.AvailabilityRuleDbLoader;
 import blackboard.persist.gradebook.impl.OutcomeDefinitionDbLoader;
 
 import com.jsu.cs521.questpath.buildingblock.object.QuestPath;
@@ -406,6 +407,35 @@ public class QuestPathUtil {
 
 		}
 		return qp;
+	}
+	
+	public String checkIfLooping(String fromId, String toId, Id courseID) throws PersistenceException{
+		String result = "";
+		AvailabilityRuleDbLoader avRuleLoader = AvailabilityRuleDbLoader.Default.getInstance();
+		AvailabilityCriteriaDbLoader avCriLoader = AvailabilityCriteriaDbLoader.Default.getInstance();
+		OutcomeDefinitionDbLoader defLoad = OutcomeDefinitionDbLoader.Default.getInstance();
+		List<AvailabilityRule> rules = avRuleLoader.loadByCourseId(courseID);
+		for(AvailabilityRule rule : rules) {
+			QuestRule questRule = new QuestRule();
+			List<AvailabilityCriteria> criterias = avCriLoader.loadByRuleId(rule.getId());
+			questRule.setExtContentId(rule.getContentId().getExternalString());
+			questRule.setRuleId(rule.getId());
+			for (AvailabilityCriteria criteria : criterias) {
+				RuleCriteria ruleCrit = new RuleCriteria();
+				if(criteria.getRuleType().equals(AvailabilityCriteria.RuleType.GRADE_RANGE)) {
+					GradeRangeCriteria gcc = (GradeRangeCriteria) criteria;
+					ruleCrit.setGradeRange(true);
+					if(gcc.getMaxScore() != null ) {ruleCrit.setMaxScore(gcc.getMaxScore());}
+					if(gcc.getMinScore() != null ) {ruleCrit.setMinScore(gcc.getMinScore());}
+					OutcomeDefinition definition = defLoad.loadById(gcc.getOutcomeDefinitionId());
+					if (definition.getContentId() != null) {
+						ruleCrit.setParentContent(definition.getContentId().getExternalString());
+						questRule.getCriterias().add(ruleCrit);
+					}
+				}
+			}
+		}
+		return result;
 	}
 	
 	public String qpathsToJson(List<QuestPath> qPaths) {
